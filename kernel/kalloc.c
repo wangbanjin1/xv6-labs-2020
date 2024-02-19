@@ -18,6 +18,8 @@ struct run {
   struct run *next;
 };
 
+//包含空闲页面列表和用于同步的自旋锁的结构体
+//lock的作用是保护空闲列表的并发访问
 struct {
   struct spinlock lock;
   struct run *freelist;
@@ -53,10 +55,9 @@ kfree(void *pa)
 
   // Fill with junk to catch dangling refs.
   memset(pa, 1, PGSIZE);
-
   r = (struct run*)pa;
-
   acquire(&kmem.lock);
+  //头插法，freelist是链表的头指针
   r->next = kmem.freelist;
   kmem.freelist = r;
   release(&kmem.lock);
@@ -79,4 +80,19 @@ kalloc(void)
   if(r)
     memset((char*)r, 5, PGSIZE); // fill with junk
   return (void*)r;
+}
+
+uint64
+kfreemem(void) {
+  struct run *r;
+  uint64 free = 0;
+  acquire(&kmem.lock);
+  r = kmem.freelist;
+  //遍历单链表
+  while (r) {
+    free += PGSIZE;
+    r = r->next;
+  }
+  release(&kmem.lock);
+  return free;
 }

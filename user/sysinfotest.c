@@ -1,9 +1,11 @@
-#include "kernel/types.h"
-#include "kernel/riscv.h"
-#include "kernel/sysinfo.h"
-#include "user/user.h"
+#include "../kernel/types.h"
+#include "../kernel/riscv.h"
+#include "../kernel/sysinfo.h"
+#include "../user/user.h"
 
-
+/*
+用于测试系统调用 sysinfo 的程序。 sysinfo 是一个系统调用，用于获取系统的一些信息，比如空闲内存数量、进程数量
+*/
 void
 sinfo(struct sysinfo *info) {
   if (sysinfo(info) < 0) {

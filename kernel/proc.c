@@ -7,7 +7,7 @@
 #include "defs.h"
 
 struct cpu cpus[NCPU];
-
+//xv6静态分配了最多64个进程的信息存储空间
 struct proc proc[NPROC];
 
 struct proc *initproc;
@@ -22,6 +22,7 @@ static void freeproc(struct proc *p);
 extern char trampoline[]; // trampoline.S
 
 // initialize the proc table at boot time.
+//该进程表均被初始化 不会存在空悬指针访问的危险
 void
 procinit(void)
 {
@@ -44,6 +45,20 @@ procinit(void)
   kvminithart();
 }
 
+// count hwo many processes are not in the state of UNUSED
+int 
+count_free_proc(void) {
+  struct proc *p;
+  int count = 0;
+  for (p = proc;p < &proc[NPROC];p++) {
+    acquire(&p->lock);
+    if (p->state != UNUSED) {
+      count += 1;
+    }
+    release(&p->lock);
+  }  
+  return count;
+}
 // Must be called with interrupts disabled,
 // to prevent race with process being moved
 // to a different CPU.
@@ -93,7 +108,7 @@ static struct proc*
 allocproc(void)
 {
   struct proc *p;
-
+  //新的进程默认不追踪sys_call
   for(p = proc; p < &proc[NPROC]; p++) {
     acquire(&p->lock);
     if(p->state == UNUSED) {
@@ -127,6 +142,7 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
+  p->trace_mask = 0;
   return p;
 }
 
@@ -290,7 +306,7 @@ fork(void)
   np->cwd = idup(p->cwd);
 
   safestrcpy(np->name, p->name, sizeof(p->name));
-
+  np->trace_mask = p->trace_mask;
   pid = np->pid;
 
   np->state = RUNNABLE;
