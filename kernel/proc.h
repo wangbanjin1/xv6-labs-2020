@@ -1,4 +1,12 @@
 // Saved registers for kernel context switches.
+typedef unsigned int   uint;
+typedef unsigned short ushort;
+typedef unsigned char  uchar;
+
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int  uint32;
+typedef unsigned long uint64;
 struct context {
   uint64 ra;
   uint64 sp;
@@ -85,7 +93,6 @@ enum procstate { UNUSED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 // Per-process state
 struct proc {
   struct spinlock lock;
-
   // p->lock must be held when using these:
   enum procstate state;        // Process state
   struct proc *parent;         // Parent process
@@ -98,6 +105,7 @@ struct proc {
   uint64 kstack;               // Virtual address of kernel stack
   uint64 sz;                   // Size of process memory (bytes)
   pagetable_t pagetable;       // User page table
+  pagetable_t kernelpt;        //进程的内核页表
   struct trapframe *trapframe; // data page for trampoline.S
   struct context context;      // swtch() here to run process
   struct file *ofile[NOFILE];  // Open files

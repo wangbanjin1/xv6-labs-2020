@@ -12,7 +12,15 @@ struct superblock;
 struct mbuf;
 struct sock;
 #endif
+typedef unsigned int   uint;
+typedef unsigned short ushort;
+typedef unsigned char  uchar;
 
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int  uint32;
+typedef unsigned long uint64;
+typedef uint64* pagetable_t;
 // bio.c
 void            binit(void);
 struct buf*     bread(uint, uint);
@@ -158,10 +166,33 @@ void            uartputc_sync(int);
 int             uartgetc(void);
 
 // vm.c
+void            vmprint(pagetable_t);
+//my answer function
 void            kvminit(void);
+
+//my answer function
+void            procinithart(pagetable_t );
+
+//my answer function
+void            procFreeKernelpt(pagetable_t );
+
+//my answer function
 void            kvminithart(void);
+
+pagetable_t     proc_kpt_init(void);
+
+
+void ukvmunmap(pagetable_t , uint64 , uint64 );
+
+void freeprockvm(struct proc*);
+
+int pagecopy(pagetable_t , pagetable_t , uint64 , uint64);
+
+int umappages(pagetable_t , uint64 , uint64 , uint64 , int);
+
 uint64          kvmpa(uint64);
 void            kvmmap(uint64, uint64, uint64, int);
+void            uvmmap(pagetable_t, uint64, uint64, uint64, int);
 int             mappages(pagetable_t, uint64, uint64, uint64, int);
 pagetable_t     uvmcreate(void);
 void            uvminit(pagetable_t, uchar *, uint);
@@ -189,6 +220,10 @@ void            plic_complete(int);
 void            virtio_disk_init(void);
 void            virtio_disk_rw(struct buf *, int);
 void            virtio_disk_intr(void);
+
+// vmcopyin.c
+int             copyin_new(pagetable_t, char *, uint64, uint64);
+int             copyinstr_new(pagetable_t, char *, uint64, uint64);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
