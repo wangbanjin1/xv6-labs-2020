@@ -112,7 +112,11 @@ found:
     release(&p->lock);
     return 0;
   }
-
+  // Allocate a alarmframe page. 为这个备份alarmframe分配1页物理空间
+  if((p->alarmframe = (struct trapframe *)kalloc()) == 0){
+    release(&p->lock);
+    return 0;
+  }
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
@@ -127,6 +131,10 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
+  p->alarm_period = 0;
+  p->alarm_handler = 0;
+  p->ticks_since_last_alarm = 0;
+  p->inalarm = 0;
   return p;
 }
 
@@ -138,7 +146,10 @@ freeproc(struct proc *p)
 {
   if(p->trapframe)
     kfree((void*)p->trapframe);
+  if(p->alarmframe)
+    kfree((void*)p->alarmframe);
   p->trapframe = 0;
+  p->alarmframe = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
   p->pagetable = 0;

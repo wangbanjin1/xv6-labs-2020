@@ -126,6 +126,20 @@ panic(char *s)
     ;
 }
 
+void backtrace(void) {
+  printf("backtrace:\n");
+  uint64 cur = r_fp();
+  uint64 pagetop = PGROUNDUP(cur);
+  while (cur < pagetop) {
+    //当前栈帧的返回地址
+    uint64 rd = *(pte_t*)(cur - 0x08);
+    printf("%p\n", rd);
+    //上一个栈帧的栈指针
+    uint64 pre = *(pte_t*)(cur - 0x10);
+    cur = pre;
+  }
+}
+
 void
 printfinit(void)
 {
