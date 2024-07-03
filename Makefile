@@ -190,11 +190,6 @@ UPROGS += \
 	$U/_bttest
 endif
 
-ifeq ($(LAB),lazy)
-UPROGS += \
-	$U/_lazytests
-endif
-
 ifeq ($(LAB),cow)
 UPROGS += \
 	$U/_cowtest
